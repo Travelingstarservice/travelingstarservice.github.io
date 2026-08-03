@@ -79,6 +79,116 @@
         <p>This admin board is for authorized team members only. Keep admin password private and rotate it regularly.</p>
         <p>Any login/password change should be completed by an authorized owner to maintain system security.</p>
       </section>
+
+      <section class="panel stack" style="max-width: 640px;">
+        <h2>Owner access controls</h2>
+        <p>Only the current signed-in owner can change or remove admin access from this device.</p>
+
+        <label class="stack">
+          <span>Current PIN</span>
+          <input id="owner-current-pin" class="form-control" type="password" inputmode="numeric" maxlength="4" placeholder="Current 4-digit PIN" />
+        </label>
+        <label class="stack">
+          <span>New PIN</span>
+          <input id="owner-next-pin" class="form-control" type="password" inputmode="numeric" maxlength="4" placeholder="New 4-digit PIN" />
+        </label>
+        <button id="owner-pin-update-btn" class="button button-primary" type="button">Update PIN</button>
+
+        <hr class="admin-divider" />
+
+        <button id="owner-lock-btn" class="button button-danger" type="button">Lock Admin and Remove PIN</button>
+        <button id="owner-signout-btn" class="button button-secondary button-dark" type="button">Sign Out of Admin</button>
+
+        <p id="owner-security-note" class="admin-note">Session is active. You can update PIN, lock new sign-ins, or sign out.</p>
+      </section>
     </main>
+
+    <script>
+      (function () {
+        var ADMIN_PIN_HASH_KEY = 'tss.admin.pinHash.v1';
+        var ADMIN_LOCKED_KEY = 'tss.admin.locked.v1';
+        var ADMIN_SESSION_KEY = 'tss.admin.sessionExpiry.v1';
+
+        var currentPin = document.getElementById('owner-current-pin');
+        var nextPin = document.getElementById('owner-next-pin');
+        var updateBtn = document.getElementById('owner-pin-update-btn');
+        var lockBtn = document.getElementById('owner-lock-btn');
+        var signOutBtn = document.getElementById('owner-signout-btn');
+        var note = document.getElementById('owner-security-note');
+
+        function isFourDigitPin(value) {
+          return /^\d{4}$/.test((value || '').trim());
+        }
+
+        function hasActiveSession() {
+          var expiry = Number(sessionStorage.getItem(ADMIN_SESSION_KEY) || '0');
+          return Number.isFinite(expiry) && expiry > Date.now();
+        }
+
+        async function hashPin(rawPin) {
+          var normalized = (rawPin || '').trim();
+          var data = new TextEncoder().encode(normalized);
+          var digest = await crypto.subtle.digest('SHA-256', data);
+          var bytes = Array.from(new Uint8Array(digest));
+          return bytes.map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        }
+
+        function redirectToLogin(message) {
+          var target = '/admin-login.html?reason=' + encodeURIComponent(message || 'Please sign in.');
+          window.location.replace(target);
+        }
+
+        if (!hasActiveSession()) {
+          redirectToLogin('Admin session expired. Please sign in again.');
+          return;
+        }
+
+        updateBtn.addEventListener('click', async function () {
+          var storedPinHash = localStorage.getItem(ADMIN_PIN_HASH_KEY);
+          if (!storedPinHash) {
+            note.textContent = 'No owner PIN is configured. You may need to reconfigure on login page.';
+            return;
+          }
+
+          var currentValue = (currentPin.value || '').trim();
+          var nextValue = (nextPin.value || '').trim();
+
+          if (!isFourDigitPin(currentValue) || !isFourDigitPin(nextValue)) {
+            note.textContent = 'Current PIN and New PIN must both be 4 digits.';
+            return;
+          }
+
+          var currentHash = await hashPin(currentValue);
+          if (currentHash !== storedPinHash) {
+            note.textContent = 'Current PIN is incorrect.';
+            return;
+          }
+
+          var nextHash = await hashPin(nextValue);
+          localStorage.setItem(ADMIN_PIN_HASH_KEY, nextHash);
+          localStorage.removeItem(ADMIN_LOCKED_KEY);
+          currentPin.value = '';
+          nextPin.value = '';
+          note.textContent = 'Owner PIN updated successfully.';
+        });
+
+        lockBtn.addEventListener('click', function () {
+          var confirmed = window.confirm('This will remove the PIN and block all future logins until a new owner PIN is configured on this device. Continue?');
+          if (!confirmed) {
+            return;
+          }
+
+          localStorage.removeItem(ADMIN_PIN_HASH_KEY);
+          localStorage.setItem(ADMIN_LOCKED_KEY, 'true');
+          sessionStorage.removeItem(ADMIN_SESSION_KEY);
+          redirectToLogin('Admin access locked by owner.');
+        });
+
+        signOutBtn.addEventListener('click', function () {
+          sessionStorage.removeItem(ADMIN_SESSION_KEY);
+          redirectToLogin('Signed out successfully.');
+        });
+      })();
+    </script>
   </body>
 </html>

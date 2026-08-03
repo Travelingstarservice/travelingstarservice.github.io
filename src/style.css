@@ -203,6 +203,30 @@ a {
   font-weight: 800;
 }
 
+.admin-note {
+  color: #4c607d;
+  font-size: 0.94rem;
+}
+
+.admin-divider {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid rgba(16, 32, 51, 0.12);
+  margin: 8px 0;
+}
+
+.button-danger {
+  background: linear-gradient(135deg, #ff6f6f, #d33b57);
+  color: #fff6f6;
+  box-shadow: 0 12px 28px rgba(193, 39, 67, 0.25);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .hero,
 .section,
 .contact-band {

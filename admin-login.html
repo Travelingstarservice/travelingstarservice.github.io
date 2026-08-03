@@ -42,25 +42,155 @@
           <input id="admin-pin" class="form-control" type="password" inputmode="numeric" maxlength="4" placeholder="Enter 4-digit admin PIN" />
         </label>
         <button id="admin-login-btn" class="button button-primary" type="button">Continue to Admin Board</button>
-        <p id="admin-login-note">Use your secured admin PIN. If you forgot it, contact the business owner immediately.</p>
+        <p id="admin-login-note" class="admin-note">Use your secured admin PIN. If you forgot it, contact the business owner immediately.</p>
+
+        <hr class="admin-divider" />
+
+        <h2 id="setup-title">Owner setup</h2>
+        <p class="admin-note">Set the owner PIN the first time. This PIN is required for all future admin sign-ins.</p>
+        <label id="owner-pin-new-wrap" class="stack">
+          <span>New Owner PIN</span>
+          <input id="owner-pin-new" class="form-control" type="password" inputmode="numeric" maxlength="4" placeholder="Create 4-digit owner PIN" />
+        </label>
+        <label id="owner-pin-confirm-wrap" class="stack">
+          <span>Confirm Owner PIN</span>
+          <input id="owner-pin-confirm" class="form-control" type="password" inputmode="numeric" maxlength="4" placeholder="Confirm 4-digit owner PIN" />
+        </label>
+        <button id="owner-pin-save-btn" class="button button-secondary button-dark" type="button">Save Owner PIN</button>
+        <p id="owner-setup-note" class="admin-note">Owner setup is only available when no PIN exists.</p>
       </section>
     </main>
 
     <script>
       (function () {
+        var ADMIN_PIN_HASH_KEY = 'tss.admin.pinHash.v1';
+        var ADMIN_LOCKED_KEY = 'tss.admin.locked.v1';
+        var ADMIN_SESSION_KEY = 'tss.admin.sessionExpiry.v1';
+        var SESSION_DURATION_MS = 2 * 60 * 60 * 1000;
+
         var pin = document.getElementById('admin-pin');
         var button = document.getElementById('admin-login-btn');
         var note = document.getElementById('admin-login-note');
+        var setupTitle = document.getElementById('setup-title');
+        var ownerPinNewWrap = document.getElementById('owner-pin-new-wrap');
+        var ownerPinConfirmWrap = document.getElementById('owner-pin-confirm-wrap');
+        var ownerPinNew = document.getElementById('owner-pin-new');
+        var ownerPinConfirm = document.getElementById('owner-pin-confirm');
+        var ownerPinSaveBtn = document.getElementById('owner-pin-save-btn');
+        var ownerSetupNote = document.getElementById('owner-setup-note');
 
-        button.addEventListener('click', function () {
+        function isFourDigitPin(value) {
+          return /^\d{4}$/.test((value || '').trim());
+        }
+
+        async function hashPin(rawPin) {
+          var normalized = (rawPin || '').trim();
+          var data = new TextEncoder().encode(normalized);
+          var digest = await crypto.subtle.digest('SHA-256', data);
+          var bytes = Array.from(new Uint8Array(digest));
+          return bytes.map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        }
+
+        function hasActiveSession() {
+          var expiry = Number(sessionStorage.getItem(ADMIN_SESSION_KEY) || '0');
+          return Number.isFinite(expiry) && expiry > Date.now();
+        }
+
+        function showSetupMode(enabled) {
+          setupTitle.style.display = enabled ? 'block' : 'none';
+          ownerPinNewWrap.style.display = enabled ? 'grid' : 'none';
+          ownerPinConfirmWrap.style.display = enabled ? 'grid' : 'none';
+          ownerPinSaveBtn.style.display = enabled ? 'inline-flex' : 'none';
+          ownerSetupNote.style.display = enabled ? 'block' : 'none';
+        }
+
+        function disableLogin(message) {
+          pin.disabled = true;
+          button.disabled = true;
+          note.textContent = message;
+        }
+
+        function loadState() {
+          var reason = new URLSearchParams(window.location.search).get('reason');
+          var isLocked = localStorage.getItem(ADMIN_LOCKED_KEY) === 'true';
+          var hasPin = !!localStorage.getItem(ADMIN_PIN_HASH_KEY);
+
+          if (hasActiveSession()) {
+            window.location.href = '/admin.html';
+            return;
+          }
+
+          if (isLocked) {
+            disableLogin(reason || 'Admin access is locked by owner. New sign-ins are disabled.');
+            showSetupMode(false);
+            return;
+          }
+
+          if (!hasPin) {
+            showSetupMode(true);
+            note.textContent = reason || 'No owner PIN found. Create one below, then sign in.';
+          } else {
+            showSetupMode(false);
+            note.textContent = reason || 'Enter owner PIN to open Admin Board.';
+          }
+        }
+
+        ownerPinSaveBtn.addEventListener('click', async function () {
+          var nextPin = (ownerPinNew.value || '').trim();
+          var confirmPin = (ownerPinConfirm.value || '').trim();
+
+          if (!isFourDigitPin(nextPin)) {
+            ownerSetupNote.textContent = 'Owner PIN must be exactly 4 digits.';
+            return;
+          }
+
+          if (nextPin !== confirmPin) {
+            ownerSetupNote.textContent = 'PIN confirmation does not match.';
+            return;
+          }
+
+          var pinHash = await hashPin(nextPin);
+          localStorage.setItem(ADMIN_PIN_HASH_KEY, pinHash);
+          localStorage.removeItem(ADMIN_LOCKED_KEY);
+          ownerPinNew.value = '';
+          ownerPinConfirm.value = '';
+          ownerSetupNote.textContent = 'Owner PIN saved successfully. You can now sign in.';
+          showSetupMode(false);
+          note.textContent = 'Owner PIN configured. Enter PIN above to continue.';
+        });
+
+        button.addEventListener('click', async function () {
+          var isLocked = localStorage.getItem(ADMIN_LOCKED_KEY) === 'true';
+          if (isLocked) {
+            note.textContent = 'Admin access is locked by owner. New sign-ins are disabled.';
+            return;
+          }
+
+          var storedPinHash = localStorage.getItem(ADMIN_PIN_HASH_KEY);
+          if (!storedPinHash) {
+            note.textContent = 'Owner PIN is not set. Create one below first.';
+            showSetupMode(true);
+            return;
+          }
+
           var value = (pin.value || '').trim();
-          if (!/^\d{4}$/.test(value)) {
+          if (!isFourDigitPin(value)) {
             note.textContent = 'Please enter a valid 4-digit PIN.';
             return;
           }
+
+          var providedPinHash = await hashPin(value);
+          if (providedPinHash !== storedPinHash) {
+            note.textContent = 'Invalid PIN. Access denied.';
+            return;
+          }
+
+          sessionStorage.setItem(ADMIN_SESSION_KEY, String(Date.now() + SESSION_DURATION_MS));
           note.textContent = 'PIN accepted. Opening Admin Board.';
           window.location.href = '/admin.html';
         });
+
+        loadState();
       })();
     </script>
   </body>
