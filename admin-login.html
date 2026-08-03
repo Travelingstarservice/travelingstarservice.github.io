@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#c28a2c" />
+    <meta name="description" content="Admin login gateway for Traveling Star Service." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>Admin Login | Traveling Star Service</title>
+  </head>
+  <body>
+    <div class="flag-banner" role="img" aria-label="Traveling Star Service flag banner">
+      <img src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag" />
+    </div>
+    <header class="site-nav-wrap">
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="brand" href="/index.html" aria-label="Traveling Star Service home">
+          <img class="brand-logo" src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag logo" />
+          <span>Traveling Star Service</span>
+        </a>
+        <div class="site-nav-links">
+          <a href="/services.html">Services</a>
+          <a href="/ai-studio.html">AI Studio</a>
+          <a href="/payments.html">Payments</a>
+          <a href="/admin.html">Admin</a>
+          <a href="/contact.html">Contact</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="subpage-shell">
+      <section class="subpage-hero">
+        <p class="eyebrow">Admin Login</p>
+        <h1>Authorized use only.</h1>
+        <p class="admin-badge">Restricted: Not accessible to customers</p>
+      </section>
+
+      <section class="panel stack" style="max-width: 520px;">
+        <label class="stack">
+          <span>Admin PIN</span>
+          <input id="admin-pin" class="form-control" type="password" inputmode="numeric" maxlength="4" placeholder="Enter 4-digit admin PIN" />
+        </label>
+        <button id="admin-login-btn" class="button button-primary" type="button">Continue to Admin Board</button>
+        <p id="admin-login-note">Use your secured admin PIN. If you forgot it, contact the business owner immediately.</p>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        var pin = document.getElementById('admin-pin');
+        var button = document.getElementById('admin-login-btn');
+        var note = document.getElementById('admin-login-note');
+
+        button.addEventListener('click', function () {
+          var value = (pin.value || '').trim();
+          if (!/^\d{4}$/.test(value)) {
+            note.textContent = 'Please enter a valid 4-digit PIN.';
+            return;
+          }
+          note.textContent = 'PIN accepted. Opening Admin Board.';
+          window.location.href = '/admin.html';
+        });
+      })();
+    </script>
+  </body>
+</html>

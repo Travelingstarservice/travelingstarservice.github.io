@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#c28a2c" />
+    <meta name="description" content="Traveling Star Service payment options including debit, credit, and bank transfer." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>Payments | Traveling Star Service</title>
+  </head>
+  <body>
+    <div class="flag-banner" role="img" aria-label="Traveling Star Service flag banner">
+      <img src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag" />
+    </div>
+    <header class="site-nav-wrap">
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="brand" href="/index.html" aria-label="Traveling Star Service home">
+          <img class="brand-logo" src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag logo" />
+          <span>Traveling Star Service</span>
+        </a>
+        <div class="site-nav-links">
+          <a href="/services.html">Services</a>
+          <a href="/ai-studio.html">AI Studio</a>
+          <a href="/payments.html">Payments</a>
+          <a href="/admin.html">Admin</a>
+          <a href="/contact.html">Contact</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="subpage-shell">
+      <section class="subpage-hero">
+        <p class="eyebrow">Payments</p>
+        <h1>Pay by debit card, credit card, secure link, or bank transfer.</h1>
+        <p>Use your preferred method and confirm with our team for instant booking validation.</p>
+      </section>
+
+      <section class="grid-two">
+        <article class="panel stack">
+          <h2>Card payments</h2>
+          <p>Fast checkout for debit and credit cards through secure payment links.</p>
+          <a class="button button-primary" href="mailto:hello@travelingstarservice.com?subject=Payment%20Link%20Request&body=Please%20send%20me%20a%20secure%20payment%20link%20for%20my%20ride.">Request payment link</a>
+          <a class="button button-text" href="sms:+12528865996?body=Please%20send%20me%20a%20secure%20debit%2Fcredit%20payment%20link.">Text for card payment link</a>
+        </article>
+
+        <article class="panel stack">
+          <h2>Bank transfer</h2>
+          <p>ACH, wire, or direct bank transfer options are available for business and personal use.</p>
+          <a class="button button-call" href="tel:+12528865996">Call for bank transfer details</a>
+          <a class="button button-text" href="sms:+12528865996?body=I%20need%20bank%20transfer%20payment%20details%20for%20my%20booking.">Text for transfer instructions</a>
+        </article>
+      </section>
+
+      <section class="panel stack">
+        <h2>Submit payment request</h2>
+        <div class="grid-two">
+          <label class="stack">
+            <span>Name</span>
+            <input id="pay-name" class="form-control" placeholder="Your name" />
+          </label>
+          <label class="stack">
+            <span>Booking reference</span>
+            <input id="pay-booking" class="form-control" placeholder="Booking ID or date/time" />
+          </label>
+          <label class="stack">
+            <span>Method</span>
+            <select id="pay-method" class="form-control">
+              <option>Debit Card</option>
+              <option>Credit Card</option>
+              <option>Secure Payment Link</option>
+              <option>ACH Transfer</option>
+              <option>Wire Transfer</option>
+            </select>
+          </label>
+          <label class="stack">
+            <span>Amount (USD)</span>
+            <input id="pay-amount" class="form-control" placeholder="50" />
+          </label>
+        </div>
+        <div class="stack">
+          <a id="pay-text-link" class="button button-text" href="#">Send payment request by text</a>
+          <a id="pay-email-link" class="button button-primary" href="#">Send payment request by email</a>
+        </div>
+      </section>
+    </main>
+
+    <aside class="quick-contact" aria-label="Quick contact buttons">
+      <a class="button button-call" href="tel:+12528865996">Call 252-886-5996</a>
+      <a class="button button-text" href="sms:+12528865996?body=I%20need%20help%20with%20a%20payment%20for%20my%20booking.">Text us</a>
+    </aside>
+
+    <script>
+      (function () {
+        var textLink = document.getElementById('pay-text-link');
+        var emailLink = document.getElementById('pay-email-link');
+
+        function getVal(id, fallback) {
+          var node = document.getElementById(id);
+          var val = node && node.value ? node.value.trim() : '';
+          return val || fallback;
+        }
+
+        function refreshLinks() {
+          var name = getVal('pay-name', 'Customer');
+          var booking = getVal('pay-booking', 'Not provided');
+          var method = getVal('pay-method', 'Secure Payment Link');
+          var amount = getVal('pay-amount', '50');
+          var message = 'Payment request from ' + name + '. Booking: ' + booking + '. Method: ' + method + '. Amount: $' + amount + ' USD.';
+
+          textLink.href = 'sms:+12528865996?body=' + encodeURIComponent(message);
+          emailLink.href = 'mailto:hello@travelingstarservice.com?subject=' + encodeURIComponent('Payment Request - ' + booking) + '&body=' + encodeURIComponent(message);
+        }
+
+        ['pay-name', 'pay-booking', 'pay-method', 'pay-amount'].forEach(function (id) {
+          var node = document.getElementById(id);
+          node.addEventListener('input', refreshLinks);
+          node.addEventListener('change', refreshLinks);
+        });
+
+        refreshLinks();
+      })();
+    </script>
+  </body>
+</html>

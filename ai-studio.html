@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#c28a2c" />
+    <meta name="description" content="AI Podcast and visual content studio for Traveling Star Service." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+    <title>AI Studio | Traveling Star Service</title>
+  </head>
+  <body>
+    <div class="flag-banner" role="img" aria-label="Traveling Star Service flag banner">
+      <img src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag" />
+    </div>
+    <header class="site-nav-wrap">
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a class="brand" href="/index.html" aria-label="Traveling Star Service home">
+          <img class="brand-logo" src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag logo" />
+          <span>Traveling Star Service</span>
+        </a>
+        <div class="site-nav-links">
+          <a href="/services.html">Services</a>
+          <a href="/ai-studio.html">AI Studio</a>
+          <a href="/payments.html">Payments</a>
+          <a href="/admin.html">Admin</a>
+          <a href="/contact.html">Contact</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="subpage-shell">
+      <section class="subpage-hero">
+        <p class="eyebrow">AI Studio</p>
+        <h1>Generate podcast, weather-ready updates, and video storyboard prompts.</h1>
+        <p>This tool helps produce campaign scripts focused on local service areas and current travel conditions.</p>
+      </section>
+
+      <section class="panel stack">
+        <div class="grid-two">
+          <label class="stack">
+            <span>Topic</span>
+            <input id="topic" class="form-control" placeholder="Example: Weekend airport travel tips" />
+          </label>
+          <label class="stack">
+            <span>Style</span>
+            <select id="style" class="form-control">
+              <option>Business</option>
+              <option>Educational</option>
+              <option>Casual</option>
+            </select>
+          </label>
+          <label class="stack">
+            <span>Local area</span>
+            <input id="area" class="form-control" placeholder="Rocky Mount, NC" />
+          </label>
+          <label class="stack">
+            <span>Target date</span>
+            <input id="date" class="form-control" placeholder="Aug 10, 2026" />
+          </label>
+          <label class="stack">
+            <span>Weather notes</span>
+            <input id="weather" class="form-control" placeholder="Sunny, 84F, light wind" />
+          </label>
+          <label class="stack">
+            <span>News headline focus</span>
+            <input id="news" class="form-control" placeholder="Local event traffic and airport updates" />
+          </label>
+        </div>
+
+        <button id="generate" class="button button-primary">Generate AI Campaign Script</button>
+      </section>
+
+      <section id="output" class="panel stack" hidden>
+        <h2 id="pod-title">Generated campaign podcast</h2>
+        <p id="pod-script"></p>
+        <h3>Visual video storyboard</h3>
+        <ol id="storyboard" class="stack"></ol>
+      </section>
+    </main>
+
+    <aside class="quick-contact" aria-label="Quick contact buttons">
+      <a class="button button-call" href="tel:+12528865996">Call 252-886-5996</a>
+      <a class="button button-text" href="sms:+12528865996?body=I%20need%20help%20with%20AI%20campaign%20content%20for%20Traveling%20Star%20Service.">Text us</a>
+    </aside>
+
+    <script>
+      (function () {
+        var button = document.getElementById('generate');
+        var output = document.getElementById('output');
+        var title = document.getElementById('pod-title');
+        var script = document.getElementById('pod-script');
+        var storyboard = document.getElementById('storyboard');
+
+        function value(id, fallback) {
+          var node = document.getElementById(id);
+          var text = node && node.value ? node.value.trim() : '';
+          return text || fallback;
+        }
+
+        button.addEventListener('click', function () {
+          var topic = value('topic', 'Traveling Star service updates');
+          var style = value('style', 'Business');
+          var area = value('area', 'Rocky Mount, NC');
+          var date = value('date', 'this week');
+          var weather = value('weather', 'typical local conditions');
+          var news = value('news', 'local mobility and events');
+
+          var generatedScript = [
+            'Welcome to the ' + style + ' podcast for Traveling Star Service.',
+            'Today we focus on ' + topic + ' in ' + area + ' for ' + date + '.',
+            'Current weather context: ' + weather + '.',
+            'News focus: ' + news + '.',
+            'Traveling Star Service continues to support airport transfers, local rides, and custom routes with fast communication and reliable pickup windows.',
+            'Call or text 252-886-5996 to book instantly.'
+          ].join(' ');
+
+          title.textContent = topic + ' | AI campaign script';
+          script.textContent = generatedScript;
+
+          var shots = [
+            'Opening shot: branded vehicle in ' + area + ' with route animation and title overlay for ' + topic + '.',
+            'Middle shot: dispatcher and customer timeline graphics with weather and travel notes for ' + date + '.',
+            'Closing shot: successful drop-off, smiling customer, and CTA card with 252-886-5996.'
+          ];
+
+          storyboard.innerHTML = '';
+          shots.forEach(function (shot) {
+            var li = document.createElement('li');
+            li.textContent = shot;
+            storyboard.appendChild(li);
+          });
+
+          output.hidden = false;
+        });
+      })();
+    </script>
+  </body>
+</html>
