@@ -98,10 +98,10 @@ a {
 }
 
 .brand-logo {
-  width: 58px;
-  height: 40px;
+  width: 76px;
+  height: 48px;
   object-fit: cover;
-  object-position: center;
+  object-position: center 58%;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -721,5 +721,11 @@ h2 {
 
   .brand {
     width: 100%;
+  }
+
+  .brand-logo {
+    width: 92px;
+    height: 54px;
+    object-position: center 56%;
   }
 }
