@@ -103,6 +103,11 @@
           button.disabled = true;
           setNote('Signing in...');
 
+          var controller = new AbortController();
+          var timeoutId = setTimeout(function () {
+            controller.abort();
+          }, 15000);
+
           try {
             var response = await fetch(window.TSSSiteConfig.buildApiUrl('/auth/login'), {
               method: 'POST',
@@ -110,7 +115,8 @@
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
               },
-              body: JSON.stringify({ password: value })
+              body: JSON.stringify({ password: value }),
+              signal: controller.signal
             });
 
             var payload = await response.json().catch(function () { return {}; });
@@ -129,8 +135,13 @@
             setNote('Sign-in successful. Redirecting...');
             redirectToAdmin();
           } catch (err) {
-            setNote('Cannot reach backend API. Confirm API base and try again.');
+            if (err && err.name === 'AbortError') {
+              setNote('Backend is still waking up. Wait 30-60 seconds and try again.');
+            } else {
+              setNote('Cannot reach backend API. Confirm API base and try again.');
+            }
           } finally {
+            clearTimeout(timeoutId);
             button.disabled = false;
           }
         });
