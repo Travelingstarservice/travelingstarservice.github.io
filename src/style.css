@@ -101,7 +101,7 @@ a {
   width: 76px;
   height: 48px;
   object-fit: cover;
-  object-position: center 50%;
+  object-position: center 52%;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -726,6 +726,6 @@ h2 {
   .brand-logo {
     width: 92px;
     height: 54px;
-    object-position: center 48%;
+    object-position: center 50%;
   }
 }
