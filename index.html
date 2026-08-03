@@ -7,6 +7,7 @@
     <meta name="description" content="Traveling Star Service provides reliable pickup and drop-off rides, airport transfers, and custom routes." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/src/style.css" />
+    <script src="/site-config.js"></script>
     <title>Traveling Star Service</title>
   </head>
   <body>
@@ -86,40 +87,15 @@
           <p class="eyebrow">Services</p>
           <h2>Built for everyday travel and special trips.</h2>
         </div>
-        <div class="services-grid">
-          <article class="service-card">
-            <h3>Airport transfers</h3>
-            <p>Efficient pickup and drop-off for early departures, late arrivals, and everything in between.</p>
-            <div class="service-actions">
-              <a class="button button-call button-small" href="tel:+12528865996">Call for airport ride</a>
-              <a class="button button-text button-small" href="sms:+12528865996?body=I%20need%20an%20airport%20transfer.%20Pickup%3A%20%20Drop-off%3A%20%20Date%2Ftime%3A%20">Text for airport ride</a>
-            </div>
-          </article>
-          <article class="service-card">
-            <h3>Local rides</h3>
-            <p>Quick trips across town for errands, appointments, and essential travel.</p>
-            <div class="service-actions">
-              <a class="button button-call button-small" href="tel:+12528865996">Call for local ride</a>
-              <a class="button button-text button-small" href="sms:+12528865996?body=I%20need%20a%20local%20ride.%20Pickup%3A%20%20Drop-off%3A%20%20Date%2Ftime%3A%20">Text for local ride</a>
-            </div>
-          </article>
-          <article class="service-card">
-            <h3>Events and gatherings</h3>
-            <p>Arrive together and leave on your own timeline with flexible service plans.</p>
-            <div class="service-actions">
-              <a class="button button-call button-small" href="tel:+12528865996">Call for event service</a>
-              <a class="button button-text button-small" href="sms:+12528865996?body=I%20need%20event%20transport.%20Event%3A%20%20Pickup%3A%20%20Date%2Ftime%3A%20">Text for event service</a>
-            </div>
-          </article>
-          <article class="service-card">
-            <h3>Custom routes</h3>
-            <p>Need something specific? Send the route details and we’ll work around your schedule.</p>
-            <div class="service-actions">
-              <a class="button button-call button-small" href="tel:+12528865996">Call for custom route</a>
-              <a class="button button-text button-small" href="sms:+12528865996?body=I%20need%20a%20custom%20route.%20Pickup%3A%20%20Stops%3A%20%20Drop-off%3A%20%20Date%2Ftime%3A%20">Text for custom route</a>
-            </div>
-          </article>
+        <div class="services-grid" data-config-services-home></div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">Fleet</p>
+          <h2>Active fleet and dispatch lanes.</h2>
         </div>
+        <div class="fleet-grid" data-config-fleet></div>
       </section>
 
       <section class="section section-split">

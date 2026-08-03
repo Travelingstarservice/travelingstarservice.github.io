@@ -7,6 +7,7 @@
     <meta name="description" content="Traveling Star Service offerings and route options." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/src/style.css" />
+    <script src="/site-config.js"></script>
     <title>Services | Traveling Star Service</title>
   </head>
   <body>
@@ -36,42 +37,15 @@
         <p>Call or text 252-886-5996 to confirm same-day availability and final pricing.</p>
       </section>
 
-      <section class="grid-two">
-        <article class="panel stack">
-          <h2>Airport transfers</h2>
-          <p>Door-to-terminal and terminal-to-home trips with pickup tracking and timing updates.</p>
-          <div class="stack">
-            <a class="button button-call" href="tel:+12528865996">Call for airport booking</a>
-            <a class="button button-text" href="sms:+12528865996?body=I%20need%20an%20airport%20transfer.%20Pickup%3A%20%20Drop-off%3A%20%20Date%2Ftime%3A%20">Text airport details</a>
-          </div>
-        </article>
+      <section class="grid-two" data-config-services-catalog>
+      </section>
 
-        <article class="panel stack">
-          <h2>Local rides</h2>
-          <p>Quick and dependable local transportation for appointments, errands, and family plans.</p>
-          <div class="stack">
-            <a class="button button-call" href="tel:+12528865996">Call for local ride</a>
-            <a class="button button-text" href="sms:+12528865996?body=I%20need%20a%20local%20ride.%20Pickup%3A%20%20Drop-off%3A%20%20Date%2Ftime%3A%20">Text local trip details</a>
-          </div>
-        </article>
-
-        <article class="panel stack">
-          <h2>Events and gatherings</h2>
-          <p>Flexible transport schedules for weddings, parties, reunions, and multi-stop events.</p>
-          <div class="stack">
-            <a class="button button-call" href="tel:+12528865996">Call for event service</a>
-            <a class="button button-text" href="sms:+12528865996?body=I%20need%20event%20transport.%20Event%3A%20%20Pickup%3A%20%20Date%2Ftime%3A%20">Text event service details</a>
-          </div>
-        </article>
-
-        <article class="panel stack">
-          <h2>Custom routes</h2>
-          <p>Build routes with multiple stops, return rides, and schedule windows around your day.</p>
-          <div class="stack">
-            <a class="button button-call" href="tel:+12528865996">Call for custom route</a>
-            <a class="button button-text" href="sms:+12528865996?body=I%20need%20a%20custom%20route.%20Pickup%3A%20%20Stops%3A%20%20Drop-off%3A%20%20Date%2Ftime%3A%20">Text custom route details</a>
-          </div>
-        </article>
+      <section class="section">
+        <div class="section-heading">
+          <p class="eyebrow">Fleet</p>
+          <h2>Current fleet overview.</h2>
+        </div>
+        <div class="fleet-grid" data-config-fleet></div>
       </section>
     </main>
 

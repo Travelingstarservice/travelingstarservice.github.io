@@ -7,6 +7,7 @@
     <meta name="description" content="Traveling Star Service admin control board." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/src/style.css" />
+    <script src="/site-config.js"></script>
     <title>Admin Board | Traveling Star Service</title>
   </head>
   <body>
@@ -36,42 +37,67 @@
         <p class="admin-badge">Restricted: Not accessible to customers</p>
       </section>
 
-      <section class="grid-three">
-        <article class="panel stack">
-          <h2>Access and security</h2>
-          <p>Admin login is required. Use secure password rotation and role-based access for all control tasks.</p>
-          <a class="button button-primary" href="/admin-login.html">Open admin login</a>
-        </article>
+      <section class="panel stack">
+        <h2>Branding controls</h2>
+        <div class="grid-two">
+          <label class="stack">
+            <span>Header Brand Name</span>
+            <input id="cfg-brand-name" class="form-control" type="text" placeholder="Traveling Star Service" />
+          </label>
+          <label class="stack">
+            <span>Banner Image URL</span>
+            <input id="cfg-banner-image" class="form-control" type="text" placeholder="/traveling-star-flag.jpeg" />
+          </label>
+        </div>
+        <label class="stack">
+          <span><input id="cfg-show-banner" type="checkbox" /> Show banner on pages</span>
+        </label>
+        <button id="cfg-save-branding" class="button button-primary" type="button">Save Branding</button>
+      </section>
 
-        <article class="panel stack">
-          <h2>Services manager</h2>
-          <p>Add, delete, or update services, operating times, and service-area coverage.</p>
-          <a class="button button-secondary" href="/services.html">Review public services</a>
-        </article>
+      <section class="panel stack">
+        <h2>Services manager</h2>
+        <p>Add, remove, and edit your public service cards.</p>
+        <div id="cfg-services-list" class="admin-item-list"></div>
+        <div class="grid-two">
+          <label class="stack">
+            <span>New Service Name</span>
+            <input id="cfg-service-name" class="form-control" type="text" placeholder="Example: Medical transport" />
+          </label>
+          <label class="stack">
+            <span>New Service Description</span>
+            <input id="cfg-service-desc" class="form-control" type="text" placeholder="Describe what this service offers." />
+          </label>
+        </div>
+        <button id="cfg-add-service" class="button button-secondary button-dark" type="button">Add Service</button>
+      </section>
 
-        <article class="panel stack">
-          <h2>Branding manager</h2>
-          <p>Update logo, homepage highlights, and promo text from the secured admin tools.</p>
-          <a class="button button-secondary" href="/index.html">Review homepage</a>
-        </article>
+      <section class="panel stack">
+        <h2>Fleet manager</h2>
+        <p>Control fleet cards shown on Home and Services pages.</p>
+        <div id="cfg-fleet-list" class="admin-item-list"></div>
+        <div class="grid-two">
+          <label class="stack">
+            <span>Fleet Name</span>
+            <input id="cfg-fleet-name" class="form-control" type="text" placeholder="Example: Weekend Shuttle Team" />
+          </label>
+          <label class="stack">
+            <span>Fleet Description</span>
+            <input id="cfg-fleet-desc" class="form-control" type="text" placeholder="Describe route coverage or hours." />
+          </label>
+        </div>
+        <button id="cfg-add-fleet" class="button button-secondary button-dark" type="button">Add Fleet Item</button>
+      </section>
 
-        <article class="panel stack">
-          <h2>AI automation</h2>
-          <p>Generate podcast scripts, weather-aware updates, local-news briefs, and video prompts.</p>
-          <a class="button button-secondary" href="/ai-studio.html">Open AI Studio</a>
-        </article>
-
-        <article class="panel stack">
-          <h2>Payments control</h2>
-          <p>Manage debit, credit, secure-link, and bank-transfer flow guidance for customers.</p>
-          <a class="button button-secondary" href="/payments.html">Open payments setup</a>
-        </article>
-
-        <article class="panel stack">
-          <h2>Customer notices</h2>
-          <p>Post route advisories, weather notices, local-area updates, and date/time alerts.</p>
-          <a class="button button-text" href="sms:+12528865996?body=Admin%20notice%20draft%3A%20">Draft admin notice by text</a>
-        </article>
+      <section class="panel stack">
+        <h2>Publish controls</h2>
+        <div class="action-row">
+          <button id="cfg-save-all" class="button button-primary" type="button">Save All Changes</button>
+          <button id="cfg-reset-defaults" class="button button-danger" type="button">Reset to Defaults</button>
+          <a class="button button-secondary" href="/index.html">View Home</a>
+          <a class="button button-secondary" href="/services.html">View Services</a>
+        </div>
+        <p id="cfg-note" class="admin-note">Changes are saved to backend storage and sync across devices.</p>
       </section>
 
       <section class="panel stack">
@@ -82,7 +108,7 @@
 
       <section class="panel stack" style="max-width: 640px;">
         <h2>Owner access controls</h2>
-        <p>Only the current signed-in owner can change or remove admin access from this device.</p>
+        <p>Only a signed-in backend admin can rotate the PIN, lock access, or sign out.</p>
 
         <label class="stack">
           <span>Current PIN</span>
@@ -99,15 +125,13 @@
         <button id="owner-lock-btn" class="button button-danger" type="button">Lock Admin and Remove PIN</button>
         <button id="owner-signout-btn" class="button button-secondary button-dark" type="button">Sign Out of Admin</button>
 
-        <p id="owner-security-note" class="admin-note">Session is active. You can update PIN, lock new sign-ins, or sign out.</p>
+        <p id="owner-security-note" class="admin-note">Session check in progress.</p>
       </section>
     </main>
 
     <script>
       (function () {
-        var ADMIN_PIN_HASH_KEY = 'tss.admin.pinHash.v1';
-        var ADMIN_LOCKED_KEY = 'tss.admin.locked.v1';
-        var ADMIN_SESSION_KEY = 'tss.admin.sessionExpiry.v1';
+        var ADMIN_TOKEN_KEY = 'tss.admin.jwt.v1';
 
         var currentPin = document.getElementById('owner-current-pin');
         var nextPin = document.getElementById('owner-next-pin');
@@ -120,17 +144,8 @@
           return /^\d{4}$/.test((value || '').trim());
         }
 
-        function hasActiveSession() {
-          var expiry = Number(sessionStorage.getItem(ADMIN_SESSION_KEY) || '0');
-          return Number.isFinite(expiry) && expiry > Date.now();
-        }
-
-        async function hashPin(rawPin) {
-          var normalized = (rawPin || '').trim();
-          var data = new TextEncoder().encode(normalized);
-          var digest = await crypto.subtle.digest('SHA-256', data);
-          var bytes = Array.from(new Uint8Array(digest));
-          return bytes.map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        function adminToken() {
+          return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
         }
 
         function redirectToLogin(message) {
@@ -138,18 +153,46 @@
           window.location.replace(target);
         }
 
-        if (!hasActiveSession()) {
-          redirectToLogin('Admin session expired. Please sign in again.');
+        async function authFetch(path, options) {
+          var token = adminToken();
+          if (!token) {
+            throw new Error('no-token');
+          }
+
+          var response = await fetch(window.TSSSiteConfig.buildApiUrl(path), Object.assign({
+            headers: {
+              Accept: 'application/json',
+              Authorization: 'Bearer ' + token
+            }
+          }, options || {}));
+
+          var payload = await response.json().catch(function () { return {}; });
+          if (!response.ok) {
+            var error = new Error(payload.error || ('Request failed (HTTP ' + response.status + ')'));
+            error.status = response.status;
+            throw error;
+          }
+          return payload;
+        }
+
+        if (!adminToken()) {
+          redirectToLogin('Admin sign-in required.');
           return;
         }
 
-        updateBtn.addEventListener('click', async function () {
-          var storedPinHash = localStorage.getItem(ADMIN_PIN_HASH_KEY);
-          if (!storedPinHash) {
-            note.textContent = 'No owner PIN is configured. You may need to reconfigure on login page.';
-            return;
-          }
+        authFetch('/auth/me')
+          .then(function (payload) {
+            if ((payload.role || '').toLowerCase() !== 'admin') {
+              throw new Error('admin access required');
+            }
+            note.textContent = 'Session verified. You can update PIN, lock sign-ins, or sign out.';
+          })
+          .catch(function (err) {
+            sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+            redirectToLogin(err.message || 'Session expired. Please sign in again.');
+          });
 
+        updateBtn.addEventListener('click', async function () {
           var currentValue = (currentPin.value || '').trim();
           var nextValue = (nextPin.value || '').trim();
 
@@ -158,36 +201,239 @@
             return;
           }
 
-          var currentHash = await hashPin(currentValue);
-          if (currentHash !== storedPinHash) {
-            note.textContent = 'Current PIN is incorrect.';
-            return;
+          updateBtn.disabled = true;
+          note.textContent = 'Updating PIN...';
+          try {
+            await authFetch('/auth/admin-password', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                Authorization: 'Bearer ' + adminToken()
+              },
+              body: JSON.stringify({
+                current_password: currentValue,
+                new_password: nextValue
+              })
+            });
+            currentPin.value = '';
+            nextPin.value = '';
+            note.textContent = 'Owner PIN updated successfully.';
+          } catch (err) {
+            note.textContent = err.message || 'PIN update failed.';
+          } finally {
+            updateBtn.disabled = false;
           }
-
-          var nextHash = await hashPin(nextValue);
-          localStorage.setItem(ADMIN_PIN_HASH_KEY, nextHash);
-          localStorage.removeItem(ADMIN_LOCKED_KEY);
-          currentPin.value = '';
-          nextPin.value = '';
-          note.textContent = 'Owner PIN updated successfully.';
         });
 
-        lockBtn.addEventListener('click', function () {
+        lockBtn.addEventListener('click', async function () {
           var confirmed = window.confirm('This will remove the PIN and block all future logins until a new owner PIN is configured on this device. Continue?');
           if (!confirmed) {
             return;
           }
 
-          localStorage.removeItem(ADMIN_PIN_HASH_KEY);
-          localStorage.setItem(ADMIN_LOCKED_KEY, 'true');
-          sessionStorage.removeItem(ADMIN_SESSION_KEY);
-          redirectToLogin('Admin access locked by owner.');
+          var currentValue = (currentPin.value || '').trim();
+          if (!isFourDigitPin(currentValue)) {
+            note.textContent = 'Enter your current 4-digit PIN before locking access.';
+            return;
+          }
+
+          lockBtn.disabled = true;
+          note.textContent = 'Locking admin sign-ins...';
+          try {
+            await authFetch('/auth/admin/access/lock', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                Authorization: 'Bearer ' + adminToken()
+              },
+              body: JSON.stringify({ current_password: currentValue })
+            });
+
+            sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+            redirectToLogin('Admin access locked by owner.');
+          } catch (err) {
+            note.textContent = err.message || 'Unable to lock access.';
+          } finally {
+            lockBtn.disabled = false;
+          }
         });
 
         signOutBtn.addEventListener('click', function () {
-          sessionStorage.removeItem(ADMIN_SESSION_KEY);
+          sessionStorage.removeItem(ADMIN_TOKEN_KEY);
           redirectToLogin('Signed out successfully.');
         });
+      })();
+    </script>
+
+    <script>
+      (function () {
+        var ADMIN_TOKEN_KEY = 'tss.admin.jwt.v1';
+        var note = document.getElementById('cfg-note');
+        var brandNameInput = document.getElementById('cfg-brand-name');
+        var bannerImageInput = document.getElementById('cfg-banner-image');
+        var showBannerInput = document.getElementById('cfg-show-banner');
+        var saveBrandingBtn = document.getElementById('cfg-save-branding');
+        var saveAllBtn = document.getElementById('cfg-save-all');
+        var resetDefaultsBtn = document.getElementById('cfg-reset-defaults');
+
+        var servicesList = document.getElementById('cfg-services-list');
+        var serviceName = document.getElementById('cfg-service-name');
+        var serviceDesc = document.getElementById('cfg-service-desc');
+        var addServiceBtn = document.getElementById('cfg-add-service');
+
+        var fleetList = document.getElementById('cfg-fleet-list');
+        var fleetName = document.getElementById('cfg-fleet-name');
+        var fleetDesc = document.getElementById('cfg-fleet-desc');
+        var addFleetBtn = document.getElementById('cfg-add-fleet');
+
+        var activeConfig = window.TSSSiteConfig.load();
+
+        function token() {
+          return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
+        }
+
+        function readConfig() {
+          return window.TSSSiteConfig.normalize(activeConfig);
+        }
+
+        async function writeConfig(config, message) {
+          activeConfig = window.TSSSiteConfig.save(config);
+          window.TSSSiteConfig.apply(activeConfig);
+
+          try {
+            var saved = await window.TSSSiteConfig.saveRemote(activeConfig, token());
+            activeConfig = saved;
+            window.TSSSiteConfig.apply(activeConfig);
+            note.textContent = message || 'Changes saved to backend.';
+            return true;
+          } catch (err) {
+            note.textContent = (message || 'Changes saved locally.') + ' Backend sync failed. Check admin login/API base.';
+            return false;
+          }
+        }
+
+        function renderCollection(node, items, type) {
+          node.innerHTML = items.map(function (item, index) {
+            return '' +
+              '<div class="admin-item-row" data-type="' + type + '" data-index="' + index + '">' +
+              '  <div class="admin-item-copy">' +
+              '    <strong>' + item.name + '</strong>' +
+              '    <p>' + item.description + '</p>' +
+              '  </div>' +
+              '  <button class="button button-danger button-small" type="button" data-action="delete">Delete</button>' +
+              '</div>';
+          }).join('');
+        }
+
+        function renderAll() {
+          var config = readConfig();
+          brandNameInput.value = config.brandName;
+          bannerImageInput.value = config.bannerImage;
+          showBannerInput.checked = !!config.showBanner;
+          renderCollection(servicesList, config.services, 'services');
+          renderCollection(fleetList, config.fleet, 'fleet');
+        }
+
+        function deleteItem(type, index) {
+          var config = readConfig();
+          var list = config[type] || [];
+          if (list.length <= 1) {
+            note.textContent = 'At least one ' + type.slice(0, -1) + ' item is required.';
+            return;
+          }
+          list.splice(index, 1);
+          config[type] = list;
+          writeConfig(config, 'Item removed and changes saved.').then(renderAll);
+        }
+
+        servicesList.addEventListener('click', function (event) {
+          var button = event.target.closest('button[data-action="delete"]');
+          var row = event.target.closest('.admin-item-row');
+          if (!button || !row) return;
+          deleteItem('services', Number(row.getAttribute('data-index')) || 0);
+        });
+
+        fleetList.addEventListener('click', function (event) {
+          var button = event.target.closest('button[data-action="delete"]');
+          var row = event.target.closest('.admin-item-row');
+          if (!button || !row) return;
+          deleteItem('fleet', Number(row.getAttribute('data-index')) || 0);
+        });
+
+        addServiceBtn.addEventListener('click', function () {
+          var name = (serviceName.value || '').trim();
+          var description = (serviceDesc.value || '').trim();
+          if (!name || !description) {
+            note.textContent = 'Enter both service name and description.';
+            return;
+          }
+          var config = readConfig();
+          config.services.push({ name: name, description: description });
+          writeConfig(config, 'Service added and saved.').then(function () {
+            serviceName.value = '';
+            serviceDesc.value = '';
+            renderAll();
+          });
+        });
+
+        addFleetBtn.addEventListener('click', function () {
+          var name = (fleetName.value || '').trim();
+          var description = (fleetDesc.value || '').trim();
+          if (!name || !description) {
+            note.textContent = 'Enter both fleet name and description.';
+            return;
+          }
+          var config = readConfig();
+          config.fleet.push({ name: name, description: description });
+          writeConfig(config, 'Fleet item added and saved.').then(function () {
+            fleetName.value = '';
+            fleetDesc.value = '';
+            renderAll();
+          });
+        });
+
+        function saveBranding() {
+          var config = readConfig();
+          var nextName = (brandNameInput.value || '').trim();
+          var nextBanner = (bannerImageInput.value || '').trim();
+          config.brandName = nextName || config.brandName;
+          config.bannerImage = nextBanner || config.bannerImage;
+          config.showBanner = !!showBannerInput.checked;
+          return writeConfig(config, 'Branding changes saved.').then(renderAll);
+        }
+
+        saveBrandingBtn.addEventListener('click', saveBranding);
+
+        saveAllBtn.addEventListener('click', function () {
+          saveBranding().then(function () {
+            note.textContent = 'All admin changes saved successfully.';
+          });
+        });
+
+        resetDefaultsBtn.addEventListener('click', function () {
+          var ok = window.confirm('Reset all services, fleet, and branding to defaults?');
+          if (!ok) return;
+          var defaults = window.TSSSiteConfig.normalize(window.TSSSiteConfig.defaults);
+          writeConfig(defaults, 'Defaults restored and saved.').then(renderAll);
+        });
+
+        function init() {
+          note.textContent = 'Loading config from backend...';
+          renderAll();
+          window.TSSSiteConfig.fetchRemote()
+            .then(function (remoteConfig) {
+              activeConfig = remoteConfig;
+              renderAll();
+              note.textContent = 'Loaded latest config from backend.';
+            })
+            .catch(function () {
+              note.textContent = 'Using local config. Backend may be unavailable.';
+            });
+        }
+
+        init();
       })();
     </script>
   </body>

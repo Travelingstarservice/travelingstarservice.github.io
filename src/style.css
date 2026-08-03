@@ -173,6 +173,12 @@ a {
   gap: 14px;
 }
 
+.fleet-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .stack {
   display: grid;
   gap: 10px;
@@ -206,6 +212,39 @@ a {
 .admin-note {
   color: #4c607d;
   font-size: 0.94rem;
+}
+
+.admin-item-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid rgba(16, 32, 51, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  background: #f7f9fd;
+}
+
+.admin-item-copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.admin-item-copy p {
+  color: #5b6777;
+  font-size: 0.93rem;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .admin-divider {
@@ -649,6 +688,7 @@ h2 {
   .hero,
   .section-split,
   .services-grid,
+  .fleet-grid,
   .hero-stats,
   .contact-band {
     grid-template-columns: 1fr;
