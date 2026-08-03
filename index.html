@@ -132,6 +132,10 @@
             <input type="text" name="name" placeholder="Your name" required />
           </label>
           <label>
+            <span>Your phone number</span>
+            <input type="tel" name="customerPhone" placeholder="Best number to reach you" required />
+          </label>
+          <label>
             <span>Service type</span>
             <select name="service" required>
               <option value="" selected disabled>Select a service</option>
@@ -149,6 +153,10 @@
             <span>Drop-off location</span>
             <input type="text" name="dropoff" placeholder="Destination" required />
           </label>
+          <div id="map-links" class="map-links" hidden>
+            <a id="pickup-map-link" href="#" target="_blank" rel="noopener noreferrer">Open pickup in map</a>
+            <a id="dropoff-map-link" href="#" target="_blank" rel="noopener noreferrer">Open drop-off in map</a>
+          </div>
           <label>
             <span>Date and time</span>
             <input type="text" name="datetime" placeholder="Example: Aug 6 at 8:30 AM" required />
@@ -163,6 +171,7 @@
           </label>
           <div class="booking-actions">
             <button class="button button-text" type="submit">Send booking by text</button>
+            <button id="booking-email-button" class="button button-primary" type="button">Send booking by email</button>
             <a class="button button-call" href="tel:+12528865996">Call instead</a>
           </div>
           <p class="booking-help">Need immediate help? Call <a class="phone-link" href="tel:+12528865996">252-886-5996</a>.</p>
@@ -192,12 +201,15 @@
     <script>
       (function () {
         var form = document.getElementById('booking-form');
+        var emailButton = document.getElementById('booking-email-button');
+        var mapLinks = document.getElementById('map-links');
+        var pickupMapLink = document.getElementById('pickup-map-link');
+        var dropoffMapLink = document.getElementById('dropoff-map-link');
         if (!form) return;
 
-        form.addEventListener('submit', function (event) {
-          event.preventDefault();
-
+        function collectBookingData() {
           var name = form.elements.namedItem('name').value.trim();
+          var customerPhone = form.elements.namedItem('customerPhone').value.trim();
           var service = form.elements.namedItem('service').value.trim();
           var pickup = form.elements.namedItem('pickup').value.trim();
           var dropoff = form.elements.namedItem('dropoff').value.trim();
@@ -205,24 +217,93 @@
           var passengers = form.elements.namedItem('passengers').value.trim();
           var notes = form.elements.namedItem('notes').value.trim();
 
-          if (!name || !service || !pickup || !dropoff || !datetime || !passengers) {
+          return {
+            name: name,
+            customerPhone: customerPhone,
+            service: service,
+            pickup: pickup,
+            dropoff: dropoff,
+            datetime: datetime,
+            passengers: passengers,
+            notes: notes
+          };
+        }
+
+        function getBookingMessage(data) {
+          return [
+            'New ride request from ' + data.name,
+            'Customer phone: ' + data.customerPhone,
+            'Service: ' + data.service,
+            'Pickup: ' + data.pickup,
+            'Drop-off: ' + data.dropoff,
+            'Date/time: ' + data.datetime,
+            'Passengers: ' + data.passengers,
+            'Notes: ' + (data.notes || 'None')
+          ].join('\n');
+        }
+
+        function updateMapLinks() {
+          if (!mapLinks || !pickupMapLink || !dropoffMapLink) return;
+          var pickup = form.elements.namedItem('pickup').value.trim();
+          var dropoff = form.elements.namedItem('dropoff').value.trim();
+
+          if (!pickup && !dropoff) {
+            mapLinks.hidden = true;
+            return;
+          }
+
+          if (pickup) {
+            pickupMapLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(pickup);
+            pickupMapLink.style.display = 'inline-flex';
+          } else {
+            pickupMapLink.style.display = 'none';
+          }
+
+          if (dropoff) {
+            dropoffMapLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(dropoff);
+            dropoffMapLink.style.display = 'inline-flex';
+          } else {
+            dropoffMapLink.style.display = 'none';
+          }
+
+          mapLinks.hidden = false;
+        }
+
+        form.addEventListener('input', updateMapLinks);
+
+        form.addEventListener('submit', function (event) {
+          event.preventDefault();
+
+          var data = collectBookingData();
+
+          if (!data.name || !data.customerPhone || !data.service || !data.pickup || !data.dropoff || !data.datetime || !data.passengers) {
             form.reportValidity();
             return;
           }
 
-          var message = [
-            'New ride request from ' + name,
-            'Service: ' + service,
-            'Pickup: ' + pickup,
-            'Drop-off: ' + dropoff,
-            'Date/time: ' + datetime,
-            'Passengers: ' + passengers,
-            'Notes: ' + (notes || 'None')
-          ].join('\n');
+          var message = getBookingMessage(data);
 
           var smsUrl = 'sms:+12528865996?body=' + encodeURIComponent(message);
           window.location.href = smsUrl;
         });
+
+        if (emailButton) {
+          emailButton.addEventListener('click', function () {
+            var data = collectBookingData();
+
+            if (!data.name || !data.customerPhone || !data.service || !data.pickup || !data.dropoff || !data.datetime || !data.passengers) {
+              form.reportValidity();
+              return;
+            }
+
+            var subject = 'Ride booking request - ' + data.service;
+            var body = getBookingMessage(data);
+            var emailUrl = 'mailto:hello@travelingstarservice.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+            window.location.href = emailUrl;
+          });
+        }
+
+        updateMapLinks();
       })();
     </script>
   </body>

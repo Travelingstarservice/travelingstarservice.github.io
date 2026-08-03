@@ -386,6 +386,28 @@ h2 {
   grid-column: 1 / -1;
 }
 
+.map-links {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: -2px;
+}
+
+.map-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 32, 51, 0.16);
+  background: #ffffff;
+  color: #21477d;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
 .booking-actions {
   grid-column: 1 / -1;
   display: flex;
@@ -467,6 +489,10 @@ h2 {
 
   .booking-form {
     grid-template-columns: 1fr;
+  }
+
+  .map-links {
+    margin-top: 0;
   }
 
   .contact-strip {
