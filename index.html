@@ -120,6 +120,55 @@
         </div>
       </section>
 
+      <section id="book-now" class="section booking-section">
+        <div class="section-heading">
+          <p class="eyebrow">Book now</p>
+          <h2>Send trip details in one tap.</h2>
+          <p>Fill this out and tap send. Your phone will open a text to 252-886-5996 with the details already written.</p>
+        </div>
+        <form id="booking-form" class="booking-form" novalidate>
+          <label>
+            <span>Name</span>
+            <input type="text" name="name" placeholder="Your name" required />
+          </label>
+          <label>
+            <span>Service type</span>
+            <select name="service" required>
+              <option value="" selected disabled>Select a service</option>
+              <option>Airport transfer</option>
+              <option>Local ride</option>
+              <option>Event service</option>
+              <option>Custom route</option>
+            </select>
+          </label>
+          <label>
+            <span>Pickup location</span>
+            <input type="text" name="pickup" placeholder="Street, city, or landmark" required />
+          </label>
+          <label>
+            <span>Drop-off location</span>
+            <input type="text" name="dropoff" placeholder="Destination" required />
+          </label>
+          <label>
+            <span>Date and time</span>
+            <input type="text" name="datetime" placeholder="Example: Aug 6 at 8:30 AM" required />
+          </label>
+          <label>
+            <span>Passengers</span>
+            <input type="number" name="passengers" min="1" max="20" value="1" required />
+          </label>
+          <label class="booking-notes">
+            <span>Extra notes (optional)</span>
+            <textarea name="notes" rows="3" placeholder="Child seat, return trip, luggage, or special requests"></textarea>
+          </label>
+          <div class="booking-actions">
+            <button class="button button-text" type="submit">Send booking by text</button>
+            <a class="button button-call" href="tel:+12528865996">Call instead</a>
+          </div>
+          <p class="booking-help">Need immediate help? Call <a class="phone-link" href="tel:+12528865996">252-886-5996</a>.</p>
+        </form>
+      </section>
+
       <section id="contact" class="contact-band">
         <div>
           <p class="eyebrow">Contact</p>
@@ -139,5 +188,42 @@
       <a class="button button-call" href="tel:+12528865996">Call 252-886-5996</a>
       <a class="button button-text" href="sms:+12528865996?body=Hi%20Traveling%20Star%20Service%2C%20I%20need%20help%20with%20a%20ride.">Text us</a>
     </aside>
+
+    <script>
+      (function () {
+        var form = document.getElementById('booking-form');
+        if (!form) return;
+
+        form.addEventListener('submit', function (event) {
+          event.preventDefault();
+
+          var name = form.elements.namedItem('name').value.trim();
+          var service = form.elements.namedItem('service').value.trim();
+          var pickup = form.elements.namedItem('pickup').value.trim();
+          var dropoff = form.elements.namedItem('dropoff').value.trim();
+          var datetime = form.elements.namedItem('datetime').value.trim();
+          var passengers = form.elements.namedItem('passengers').value.trim();
+          var notes = form.elements.namedItem('notes').value.trim();
+
+          if (!name || !service || !pickup || !dropoff || !datetime || !passengers) {
+            form.reportValidity();
+            return;
+          }
+
+          var message = [
+            'New ride request from ' + name,
+            'Service: ' + service,
+            'Pickup: ' + pickup,
+            'Drop-off: ' + dropoff,
+            'Date/time: ' + datetime,
+            'Passengers: ' + passengers,
+            'Notes: ' + (notes || 'None')
+          ].join('\n');
+
+          var smsUrl = 'sms:+12528865996?body=' + encodeURIComponent(message);
+          window.location.href = smsUrl;
+        });
+      })();
+    </script>
   </body>
 </html>
