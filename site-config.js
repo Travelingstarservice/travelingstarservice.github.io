@@ -342,6 +342,21 @@
     renderFleet(config);
   }
 
+  function shouldSyncRemoteConfig() {
+    var path = String(window.location.pathname || '').toLowerCase();
+    var isAdminSurface = /\/admin(?:-login)?\.html$/.test(path);
+    if (isAdminSurface) {
+      return true;
+    }
+
+    try {
+      var apiUrl = new URL(getApiBase(), window.location.origin);
+      return apiUrl.origin === window.location.origin;
+    } catch (err) {
+      return false;
+    }
+  }
+
   window.TSSSiteConfig = {
     defaults: clone(DEFAULT_CONFIG),
     load: loadConfig,
@@ -358,6 +373,10 @@
   document.addEventListener('DOMContentLoaded', function () {
     var localConfig = loadConfig();
     applyConfig(localConfig);
+
+    if (!shouldSyncRemoteConfig()) {
+      return;
+    }
 
     fetchRemoteConfig()
       .then(function (remoteConfig) {
