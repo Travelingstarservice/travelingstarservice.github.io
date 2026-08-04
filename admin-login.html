@@ -8,6 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/src/style.css" />
     <script src="/site-config.js"></script>
+    <script src="/header-search.js" defer></script>
     <title>Admin Login | Traveling Star Service</title>
   </head>
   <body>
@@ -15,6 +16,12 @@
       <img src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag" />
     </div>
     <header class="site-nav-wrap">
+      <div class="site-search-row">
+        <form class="site-search" role="search" aria-label="Site search" data-header-search>
+          <input type="search" name="q" placeholder="Search services, payments, admin, contact..." aria-label="Search site" />
+          <button type="submit">Search</button>
+        </form>
+      </div>
       <nav class="site-nav" aria-label="Primary navigation">
         <a class="brand" href="/index.html" aria-label="Traveling Star Service home">
           <img class="brand-logo" src="/traveling-star-flag.jpeg" alt="Traveling Star Service flag logo" />
