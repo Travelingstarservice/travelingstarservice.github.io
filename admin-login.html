@@ -64,6 +64,9 @@
       (function () {
         var ADMIN_TOKEN_KEY = 'tss.admin.jwt.v1';
         var ADMIN_ROLE_KEY = 'tss.admin.role.v1';
+        var ADMIN_MODE_KEY = 'tss.admin.mode.v1';
+        var ADMIN_LOCAL_PIN_KEY = 'tss.admin.local.pin.v1';
+        var DEFAULT_LOCAL_PIN = '2580';
 
         var apiBaseInput = document.getElementById('api-base');
         var apiBaseSaveBtn = document.getElementById('api-base-save-btn');
@@ -81,6 +84,31 @@
 
         function redirectToAdmin() {
           window.location.href = '/admin.html';
+        }
+
+        function localAdminPin() {
+          return (window.localStorage.getItem(ADMIN_LOCAL_PIN_KEY) || DEFAULT_LOCAL_PIN).trim();
+        }
+
+        function storeSession(mode, token, role) {
+          window.sessionStorage.setItem(ADMIN_MODE_KEY, mode);
+          window.sessionStorage.setItem(ADMIN_ROLE_KEY, role || 'admin');
+          if (token) {
+            window.sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
+          } else {
+            window.sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+          }
+        }
+
+        function signInLocally(pinValue) {
+          if (pinValue !== localAdminPin()) {
+            return false;
+          }
+
+          storeSession('local', '', 'admin');
+          setNote('Signed in locally. Backend sync is optional. Redirecting...');
+          redirectToAdmin();
+          return true;
         }
 
         function loadInitialState() {
@@ -128,24 +156,35 @@
 
             var payload = await response.json().catch(function () { return {}; });
             if (!response.ok) {
+              if (signInLocally(value)) {
+                return;
+              }
+
               setNote(payload.error || ('Login failed (HTTP ' + response.status + ')'));
               return;
             }
 
             if (!payload.token || (payload.role || '').toLowerCase() !== 'admin') {
+              if (signInLocally(value)) {
+                return;
+              }
+
               setNote('Admin role is required to access this board.');
               return;
             }
 
-            sessionStorage.setItem(ADMIN_TOKEN_KEY, payload.token);
-            sessionStorage.setItem(ADMIN_ROLE_KEY, payload.role || 'admin');
+            storeSession('remote', payload.token, payload.role || 'admin');
             setNote('Sign-in successful. Redirecting...');
             redirectToAdmin();
           } catch (err) {
+            if (signInLocally(value)) {
+              return;
+            }
+
             if (err && err.name === 'AbortError') {
-              setNote('Backend is still waking up. Wait 30-60 seconds and try again.');
+              setNote('Backend is still waking up. Local sign-in is available with the saved PIN.');
             } else {
-              setNote('Cannot reach backend API. Confirm API base and try again.');
+              setNote('Cannot reach backend API. Local sign-in is available with the saved PIN.');
             }
           } finally {
             clearTimeout(timeoutId);

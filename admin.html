@@ -139,6 +139,9 @@
     <script>
       (function () {
         var ADMIN_TOKEN_KEY = 'tss.admin.jwt.v1';
+        var ADMIN_ROLE_KEY = 'tss.admin.role.v1';
+        var ADMIN_MODE_KEY = 'tss.admin.mode.v1';
+        var ADMIN_LOCAL_PIN_KEY = 'tss.admin.local.pin.v1';
 
         var currentPin = document.getElementById('owner-current-pin');
         var nextPin = document.getElementById('owner-next-pin');
@@ -155,12 +158,72 @@
           return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
         }
 
+        function adminMode() {
+          return (sessionStorage.getItem(ADMIN_MODE_KEY) || 'remote').toLowerCase();
+        }
+
+        function isLocalSession() {
+          return adminMode() === 'local';
+        }
+
+        function localAdminPin() {
+          return (window.localStorage.getItem(ADMIN_LOCAL_PIN_KEY) || '2580').trim();
+        }
+
+        function setLocalAdminPin(nextPinValue) {
+          window.localStorage.setItem(ADMIN_LOCAL_PIN_KEY, nextPinValue);
+        }
+
         function redirectToLogin(message) {
           var target = '/admin-login.html?reason=' + encodeURIComponent(message || 'Please sign in.');
           window.location.replace(target);
         }
 
+        function signOutSession(message) {
+          sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+          sessionStorage.removeItem(ADMIN_ROLE_KEY);
+          sessionStorage.removeItem(ADMIN_MODE_KEY);
+          redirectToLogin(message);
+        }
+
         async function authFetch(path, options) {
+          if (isLocalSession()) {
+            var method = String((options && options.method) || 'GET').toUpperCase();
+            var body = options && options.body ? JSON.parse(options.body) : {};
+
+            if (path === '/auth/me') {
+              return {
+                id: 'local-admin',
+                email: 'admin@travelingstar.local',
+                role: 'admin',
+                adminLoginEnabled: true,
+                mode: 'local'
+              };
+            }
+
+            if (path === '/auth/admin-password' && method === 'POST') {
+              var currentPassword = String(body.current_password || '').trim();
+              var nextPassword = String(body.new_password || '').trim();
+
+              if (!/^[0-9]{4}$/.test(nextPassword)) {
+                throw new Error('please provide a 4-digit password');
+              }
+
+              if (currentPassword && currentPassword !== localAdminPin()) {
+                throw new Error('current password is incorrect');
+              }
+
+              setLocalAdminPin(nextPassword);
+              return { message: 'admin password updated locally' };
+            }
+
+            if (path === '/auth/admin/access/lock' && method === 'POST') {
+              throw new Error('local admin mode does not support locking access');
+            }
+
+            throw new Error('backend sync is unavailable in local admin mode');
+          }
+
           var token = adminToken();
           if (!token) {
             throw new Error('no-token');
@@ -182,7 +245,7 @@
           return payload;
         }
 
-        if (!adminToken()) {
+        if (!adminToken() && !isLocalSession()) {
           redirectToLogin('Admin sign-in required.');
           return;
         }
@@ -192,11 +255,12 @@
             if ((payload.role || '').toLowerCase() !== 'admin') {
               throw new Error('admin access required');
             }
-            note.textContent = 'Session verified. You can update PIN, lock sign-ins, or sign out.';
+            note.textContent = isLocalSession()
+              ? 'Local admin session active. Changes save locally until backend is reachable.'
+              : 'Session verified. You can update PIN, lock sign-ins, or sign out.';
           })
           .catch(function (err) {
-            sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-            redirectToLogin(err.message || 'Session expired. Please sign in again.');
+            signOutSession(err.message || 'Session expired. Please sign in again.');
           });
 
         updateBtn.addEventListener('click', async function () {
@@ -234,6 +298,11 @@
         });
 
         lockBtn.addEventListener('click', async function () {
+          if (isLocalSession()) {
+            signOutSession('Local admin session ended.');
+            return;
+          }
+
           var confirmed = window.confirm('This will remove the PIN and block all future logins until a new owner PIN is configured on this device. Continue?');
           if (!confirmed) {
             return;
@@ -258,8 +327,7 @@
               body: JSON.stringify({ current_password: currentValue })
             });
 
-            sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-            redirectToLogin('Admin access locked by owner.');
+            signOutSession('Admin access locked by owner.');
           } catch (err) {
             note.textContent = err.message || 'Unable to lock access.';
           } finally {
@@ -268,8 +336,7 @@
         });
 
         signOutBtn.addEventListener('click', function () {
-          sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-          redirectToLogin('Signed out successfully.');
+          signOutSession('Signed out successfully.');
         });
       })();
     </script>
@@ -277,6 +344,7 @@
     <script>
       (function () {
         var ADMIN_TOKEN_KEY = 'tss.admin.jwt.v1';
+        var ADMIN_MODE_KEY = 'tss.admin.mode.v1';
         var note = document.getElementById('cfg-note');
         var brandNameInput = document.getElementById('cfg-brand-name');
         var bannerImageInput = document.getElementById('cfg-banner-image');
@@ -301,6 +369,10 @@
           return sessionStorage.getItem(ADMIN_TOKEN_KEY) || '';
         }
 
+        function isLocalSession() {
+          return (sessionStorage.getItem(ADMIN_MODE_KEY) || 'remote').toLowerCase() === 'local';
+        }
+
         function readConfig() {
           return window.TSSSiteConfig.normalize(activeConfig);
         }
@@ -309,8 +381,19 @@
           activeConfig = window.TSSSiteConfig.save(config);
           window.TSSSiteConfig.apply(activeConfig);
 
+          if (isLocalSession()) {
+            note.textContent = (message || 'Changes saved locally.') + ' Backend sync is disabled in local admin mode.';
+            return false;
+          }
+
+          var adminToken = token();
+          if (!adminToken) {
+            note.textContent = (message || 'Changes saved locally.') + ' Backend sync is unavailable without a remote admin session.';
+            return false;
+          }
+
           try {
-            var saved = await window.TSSSiteConfig.saveRemote(activeConfig, token());
+            var saved = await window.TSSSiteConfig.saveRemote(activeConfig, adminToken);
             activeConfig = saved;
             window.TSSSiteConfig.apply(activeConfig);
             note.textContent = message || 'Changes saved to backend.';
@@ -445,6 +528,12 @@
         });
 
         function init() {
+          if (isLocalSession()) {
+            note.textContent = 'Local admin session active. Changes are saved in this browser until backend sync returns.';
+            renderAll();
+            return;
+          }
+
           note.textContent = 'Loading config from backend...';
           renderAll();
           window.TSSSiteConfig.fetchRemote()
