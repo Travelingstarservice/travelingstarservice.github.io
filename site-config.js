@@ -220,75 +220,118 @@
   function renderHomeServices(config) {
     var grid = document.querySelector('[data-config-services-home]');
     if (!grid) return;
+    grid.innerHTML = '';
+    config.services.forEach(function (service) {
+      var label = serviceActionLabel(service.name);
+      var encoded = encodeURIComponent('I need ' + service.name + '. Pickup:  Drop-off:  Date/time: ');
 
-    var html = config.services
-      .map(function (service) {
-        var label = serviceActionLabel(service.name);
-        var encoded = encodeURIComponent('I need ' + service.name + '. Pickup:  Drop-off:  Date/time: ');
-        return '' +
-          '<article class="service-card">' +
-          '  <h3>' + service.name + '</h3>' +
-          '  <p>' + service.description + '</p>' +
-          '  <div class="service-actions">' +
-          '    <a class="button button-call button-small" href="tel:+12528865996">Call for ' + label + '</a>' +
-          '    <a class="button button-text button-small" href="sms:+12528865996?body=' + encoded + '">Text for ' + label + '</a>' +
-          '  </div>' +
-          '</article>';
-      })
-      .join('');
+      var card = document.createElement('article');
+      card.className = 'service-card';
 
-    grid.innerHTML = html;
+      var title = document.createElement('h3');
+      title.textContent = service.name;
+
+      var description = document.createElement('p');
+      description.textContent = service.description;
+
+      var actions = document.createElement('div');
+      actions.className = 'service-actions';
+
+      var call = document.createElement('a');
+      call.className = 'button button-call button-small';
+      call.href = 'tel:+12528865996';
+      call.textContent = 'Call for ' + label;
+
+      var text = document.createElement('a');
+      text.className = 'button button-text button-small';
+      text.href = 'sms:+12528865996?body=' + encoded;
+      text.textContent = 'Text for ' + label;
+
+      actions.appendChild(call);
+      actions.appendChild(text);
+      card.appendChild(title);
+      card.appendChild(description);
+      card.appendChild(actions);
+      grid.appendChild(card);
+    });
 
     var serviceSelect = document.querySelector('#booking-form select[name="service"]');
     if (serviceSelect) {
-      var options = ['<option value="" selected disabled>Select a service</option>']
-        .concat(config.services.map(function (service) {
-          return '<option>' + service.name + '</option>';
-        }))
-        .join('');
-      serviceSelect.innerHTML = options;
+      serviceSelect.innerHTML = '';
+
+      var placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      placeholder.textContent = 'Select a service';
+      serviceSelect.appendChild(placeholder);
+
+      config.services.forEach(function (service) {
+        var option = document.createElement('option');
+        option.textContent = service.name;
+        serviceSelect.appendChild(option);
+      });
     }
   }
 
   function renderCatalogServices(config) {
     var grid = document.querySelector('[data-config-services-catalog]');
     if (!grid) return;
+    grid.innerHTML = '';
+    config.services.forEach(function (service) {
+      var label = serviceActionLabel(service.name);
+      var encoded = encodeURIComponent('I need ' + service.name + '. Pickup:  Drop-off:  Date/time: ');
 
-    var html = config.services
-      .map(function (service) {
-        var label = serviceActionLabel(service.name);
-        var encoded = encodeURIComponent('I need ' + service.name + '. Pickup:  Drop-off:  Date/time: ');
-        return '' +
-          '<article class="panel stack">' +
-          '  <h2>' + service.name + '</h2>' +
-          '  <p>' + service.description + '</p>' +
-          '  <div class="stack">' +
-          '    <a class="button button-call" href="tel:+12528865996">Call for ' + label + '</a>' +
-          '    <a class="button button-text" href="sms:+12528865996?body=' + encoded + '">Text ' + label + ' details</a>' +
-          '  </div>' +
-          '</article>';
-      })
-      .join('');
+      var card = document.createElement('article');
+      card.className = 'panel stack';
 
-    grid.innerHTML = html;
+      var title = document.createElement('h2');
+      title.textContent = service.name;
+
+      var description = document.createElement('p');
+      description.textContent = service.description;
+
+      var actions = document.createElement('div');
+      actions.className = 'stack';
+
+      var call = document.createElement('a');
+      call.className = 'button button-call';
+      call.href = 'tel:+12528865996';
+      call.textContent = 'Call for ' + label;
+
+      var text = document.createElement('a');
+      text.className = 'button button-text';
+      text.href = 'sms:+12528865996?body=' + encoded;
+      text.textContent = 'Text ' + label + ' details';
+
+      actions.appendChild(call);
+      actions.appendChild(text);
+      card.appendChild(title);
+      card.appendChild(description);
+      card.appendChild(actions);
+      grid.appendChild(card);
+    });
   }
 
   function renderFleet(config) {
     var fleetNodes = document.querySelectorAll('[data-config-fleet]');
     if (!fleetNodes.length) return;
-
-    var html = config.fleet
-      .map(function (item) {
-        return '' +
-          '<article class="panel stack">' +
-          '  <h3>' + item.name + '</h3>' +
-          '  <p>' + item.description + '</p>' +
-          '</article>';
-      })
-      .join('');
-
     fleetNodes.forEach(function (node) {
-      node.innerHTML = html;
+      node.innerHTML = '';
+      config.fleet.forEach(function (item) {
+        var card = document.createElement('article');
+        card.className = 'panel stack';
+
+        var title = document.createElement('h3');
+        title.textContent = item.name;
+
+        var description = document.createElement('p');
+        description.textContent = item.description;
+
+        card.appendChild(title);
+        card.appendChild(description);
+        node.appendChild(card);
+      });
     });
   }
 

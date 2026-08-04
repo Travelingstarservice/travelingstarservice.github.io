@@ -315,16 +315,34 @@
         }
 
         function renderCollection(node, items, type) {
-          node.innerHTML = items.map(function (item, index) {
-            return '' +
-              '<div class="admin-item-row" data-type="' + type + '" data-index="' + index + '">' +
-              '  <div class="admin-item-copy">' +
-              '    <strong>' + item.name + '</strong>' +
-              '    <p>' + item.description + '</p>' +
-              '  </div>' +
-              '  <button class="button button-danger button-small" type="button" data-action="delete">Delete</button>' +
-              '</div>';
-          }).join('');
+          node.innerHTML = '';
+          items.forEach(function (item, index) {
+            var row = document.createElement('div');
+            row.className = 'admin-item-row';
+            row.dataset.type = type;
+            row.dataset.index = String(index);
+
+            var copy = document.createElement('div');
+            copy.className = 'admin-item-copy';
+
+            var title = document.createElement('strong');
+            title.textContent = item.name;
+
+            var description = document.createElement('p');
+            description.textContent = item.description;
+
+            var deleteButton = document.createElement('button');
+            deleteButton.className = 'button button-danger button-small';
+            deleteButton.type = 'button';
+            deleteButton.dataset.action = 'delete';
+            deleteButton.textContent = 'Delete';
+
+            copy.appendChild(title);
+            copy.appendChild(description);
+            row.appendChild(copy);
+            row.appendChild(deleteButton);
+            node.appendChild(row);
+          });
         }
 
         function renderAll() {
